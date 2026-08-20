@@ -1,0 +1,12 @@
+<?php
+$host       = "localhost";
+$user       = "root";
+$password   = ""; // Kosongkan saja jika kamu pakai XAMPP bawaan
+$database   = "konveksi_db"; // Pastikan nama database di phpMyAdmin sama persis
+
+$koneksi = mysqli_connect($host, $user, $password, $database);
+
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
+}
+?>

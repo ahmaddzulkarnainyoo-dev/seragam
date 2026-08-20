@@ -1,0 +1,29 @@
+<?php
+// Panggil file koneksi
+include 'koneksi.php';
+
+// Cek apakah ada data yang dikirim dari form
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nama     = $_POST['nama'];
+    $whatsapp = $_POST['whatsapp'];
+    $produk   = $_POST['produk'];
+    $jumlah   = $_POST['jumlah'];
+    $catatan  = $_POST['catatan'];
+    
+    // Generate Kode Resi acak
+    $kode_resi = "KNF-" . date("Ymd") . "-" . rand(100, 999);
+    
+    // Query untuk memasukkan data ke tabel 'pesanan'
+    $query = "INSERT INTO pesanan (kode_resi, nama_pemesan, whatsapp, id_produk, jumlah, catatan) 
+              VALUES ('$kode_resi', '$nama', '$whatsapp', '$produk', '$jumlah', '$catatan')";
+              
+    if (mysqli_query($koneksi, $query)) {
+        echo "<script>
+                alert('Pesanan berhasil dibuat! Kode Resi Anda: $kode_resi');
+                window.location.href = 'status.html';
+              </script>";
+    } else {
+        echo "Gagal menyimpan data: " . mysqli_error($koneksi);
+    }
+}
+?>

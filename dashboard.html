@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Seragamin Colective</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .stat-card h3 {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-status {
+            padding: 0.4rem 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 0.25rem;
+            transition: opacity 0.2s;
+        }
+        .btn-status:hover {
+            opacity: 0.8;
+        }
+        .btn-diproses {
+            background: #fbbf24;
+            color: #1f2937;
+        }
+        .btn-selesai {
+            background: #22c55e;
+            color: white;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-diproses {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .badge-selesai {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .loading-text {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        .empty-text {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">Seragamin Colective</a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="katalog.html">Katalog</a></li>
+                    <li><a href="pemesanan.html">Pemesanan</a></li>
+                    <li><a href="status.html">Cek Status</a></li>
+                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Dashboard Pesanan Masuk</h2>
+        <p>Ringkasan aktivitas dan daftar pesanan pelanggan yang masuk melalui sistem (Realtime Firebase).</p>
+        <br>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <p>Total Pesanan</p>
+                <h3 id="totalPesanan">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Menunggu / Diproses</p>
+                <h3 id="totalProses" style="color: var(--warning-color);">0</h3>
+            </div>
+            <div class="stat-card">
+                <p>Selesai</p>
+                <h3 id="totalSelesai" style="color: var(--success-color);">0</h3>
+            </div>
+        </div>
+
+        <h3>Daftar Pesanan Terbaru</h3>
+        <br>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kode</th>
+                        <th>Nama Pemesan</th>
+                        <th>WhatsApp</th>
+                        <th>Produk</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelPesanan">
+                    <tr>
+                        <td colspan="7" class="loading-text">⏳ Memuat data pesanan...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div>
+                <h3>Seragamin Colective</h3>
+                <p>Solusi pembuatan pakaian custom terpercaya di kota Anda.</p>
+            </div>
+            <div>
+                <h3>Informasi Kontak</h3>
+                <p>WhatsApp: <a href="https://wa.me/6283196193884" target="_blank" style="color: #60a5fa;">0831-9619-3884</a></p>
+                <p>Instagram: <a href="https://instagram.com/seragamincolective" target="_blank" style="color: #60a5fa;">@seragamincolective</a></p>
+                <p>Email: <a href="mailto:seragamincolective@gmail.com" style="color: #60a5fa;">seragamincolective@gmail.com</a></p>
+            </div>
+            <div>
+                <h3>Lokasi Workshop</h3>
+                <p>Gang Musholla, Kp Utan Ciputat Timur</p>
+                <p><a href="https://maps.google.com/?q=Kp+Utan+Ciputat+Timur" target="_blank" class="map-link">📍 Buka di Google Maps</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Firebase: Realtime Fetch & Update Status Pesanan -->
+    <script type="module">
+        import { db } from "./js/firebase-config.js";
+        import {
+            collection,
+            onSnapshot,
+            updateDoc,
+            doc
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const tabelBody = document.getElementById("tabelPesanan");
+        const totalPesananEl = document.getElementById("totalPesanan");
+        const totalProsesEl = document.getElementById("totalProses");
+        const totalSelesaiEl = document.getElementById("totalSelesai");
+
+        const NAMA_PRODUK = {
+            "Kaos Polos / Sablon": "Kaos Polos / Sablon",
+            "Kemeja PDL": "Kemeja PDL",
+            "Jaket Hoodie": "Jaket Hoodie"
+        };
+
+        function getBadgeClass(status) {
+            switch (status) {
+                case "Pending":
+                    return "badge-pending";
+                case "Diproses":
+                    return "badge-diproses";
+                case "Selesai":
+                    return "badge-selesai";
+                default:
+                    return "badge-pending";
+            }
+        }
+
+        function formatTanggal(timestamp) {
+            if (!timestamp) return "-";
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function renderPesanan(data) {
+            tabelBody.innerHTML = "";
+
+            if (data.length === 0) {
+                tabelBody.innerHTML = '<tr><td colspan="7" class="empty-text">Belum ada pesanan masuk.</td></tr>';
+                totalPesananEl.innerText = "0";
+                totalProsesEl.innerText = "0";
+                totalSelesaiEl.innerText = "0";
+                return;
+            }
+
+            let totalProses = 0;
+            let totalSelesai = 0;
+
+            data.forEach(pesanan => {
+                const status = pesanan.status || "Pending";
+
+                if (status === "Selesai") {
+                    totalSelesai++;
+                } else {
+                    totalProses++;
+                }
+
+                const badgeClass = getBadgeClass(status);
+                const namaProduk = NAMA_PRODUK[pesanan.produk] || pesanan.produk || "-";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${pesanan.kodePesanan || "-"}</strong></td>
+                    <td>${pesanan.namaPemesan || "-"}</td>
+                    <td>${pesanan.whatsapp || "-"}</td>
+                    <td>${namaProduk}</td>
+                    <td>${pesanan.jumlah ? pesanan.jumlah + " Pcs" : "-"}</td>
+                    <td>
+                        <span class="badge-status ${badgeClass}">${status}</span>
+                    </td>
+                    <td>
+                        ${status === "Pending"
+                            ? `<button class="btn-status btn-diproses" data-id="${pesanan.id}" data-status="Diproses">Proses</button>`
+                            : ""}
+                        ${status === "Diproses"
+                            ? `<button class="btn-status btn-selesai" data-id="${pesanan.id}" data-status="Selesai">Selesai</button>`
+                            : ""}
+                        ${status === "Selesai"
+                            ? `<span style="color: var(--success-color); font-weight: bold;">✔ Selesai</span>`
+                            : ""}
+                    </td>
+                `;
+
+                tabelBody.appendChild(tr);
+            });
+
+            totalPesananEl.innerText = data.length;
+            totalProsesEl.innerText = totalProses;
+            totalSelesaiEl.innerText = totalSelesai;
+
+            // Tambahkan event listener ke semua tombol aksi
+            document.querySelectorAll(".btn-status").forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const id = this.dataset.id;
+                    const statusBaru = this.dataset.status;
+
+                    // Tampilkan konfirmasi
+                    const konfirmasi = confirm("Ubah status pesanan menjadi \"" + statusBaru + "\"?");
+                    if (!konfirmasi) return;
+
+                    this.disabled = true;
+                    this.innerText = "⏳ ...";
+
+                    try {
+                        // Update status di Firestore
+                        await updateDoc(doc(db, "pesanan", id), {
+                            status: statusBaru
+                        });
+                        // Snapshot akan otomatis memperbarui tabel (realtime)
+                    } catch (error) {
+                        console.error("Gagal mengubah status:", error);
+                        alert("Terjadi kesalahan saat mengubah status. Silakan coba lagi.");
+                        this.disabled = false;
+                        this.innerText = (statusBaru === "Diproses") ? "Proses" : "Selesai";
+                    }
+                });
+            });
+        }
+
+        // Realtime listener ke koleksi "pesanan"
+        onSnapshot(collection(db, "pesanan"), (snapshot) => {
+            const data = [];
+            snapshot.forEach((docSnap) => {
+                const pesanan = docSnap.data();
+                pesanan.id = docSnap.id;
+                data.push(pesanan);
+            });
+
+            // Urutkan dari yang terbaru (dibuat paling akhir tampil paling atas)
+            data.sort((a, b) => {
+                const ta = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+                const tb = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+                return tb - ta;
+            });
+
+            renderPesanan(data);
+        }, (error) => {
+            console.error("Gagal memuat data realtime:", error);
+            tabelBody.innerHTML = '<tr><td colspan="7" class="empty-text">Gagal memuat data. Cek koneksi internet / konfigurasi Firebase.</td></tr>';
+        });
+    </script>
+</body>
+</html>
